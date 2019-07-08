@@ -17,6 +17,11 @@
 
 #include <dirent.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+
+#define NONE "\033[m"
+#define BLUE "\033[0;32;34m"
+#define GREEN "\033[0;32;32m"
 
 #define IS_A 1
 #define IS_L 12
@@ -70,9 +75,21 @@ int main(int argc,char *argv[])
     {
         if(!IS_PARA(Parameter,IS_A) && (strncmp(p->d_name,".",1)==0||strncmp(p->d_name,"..",2)==0))
             continue;
+        struct stat st;
+        stat(p->d_name,&st);
         if(IS_PARA(Parameter,IS_I))
         {
             printf("%d  ",p->d_ino);
+        }
+        if(S_ISDIR(st.st_mode))
+        {
+            printf(BLUE"%s  "NONE,p->d_name);
+            continue;
+        }
+        else if(S_IXUSR&st.st_mode)
+        {
+            printf(GREEN"%s  "NONE,p->d_name);
+            continue;
         }
         printf("%s  ",p->d_name);
     }
