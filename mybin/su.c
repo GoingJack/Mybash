@@ -18,6 +18,7 @@
 #include <shadow.h>
 #include <pwd.h>
 #include <sys/types.h>
+#include <termios.h>
 int main(int argc,char *argv[])
 {
     char *user = "root";
@@ -29,11 +30,48 @@ int main(int argc,char *argv[])
     fflush(stdout);
 
     char passwd[128]={0};
-    fgets(passwd,128,stdin);
-    passwd[strlen(passwd) - 1]=0;
+    int j=0;
+    char ch;
+    
+    struct termios oldtm,newtm;
+    tcgetattr(0,&oldtm);
+    newtm = oldtm;
+    newtm.c_lflag &= ~ECHO;
+    newtm.c_lflag &= ~ICANON;
+    tcsetattr(0,TCSANOW,&newtm);
+    while((ch = getchar())!='\n')
+    {
+        if(j>0&&ch == 127)
+        {
+            passwd[--j]=0;
+            printf("\033[1D");
+            printf("\033[K");
+            fflush(stdout);
+        }
+        else if(ch!=127)
+        {
+            passwd[j++]=ch;
+            printf("*");
+        }
+        /*if(j>0&&ch==127)
+        {
+            passwd[--j]=0;
+            printf("\033[1D");
+            printf("\033[K");
+        }
+        else if(ch != 127)
+        {
+            passwd[j++]=ch;
+            printf("*");
+            fflush(stdout);
+        }*/
+    }
+    tcsetattr(0,TCSANOW,&oldtm);
+    //passwd[j]=0;
+    printf("%s\n",passwd);
     struct spwd *sp = getspnam(user);
     assert(sp != NULL);
-
+    
     // sp->sp_pwdp 
     char *p = sp->sp_pwdp;
     char salt[128]={0};
