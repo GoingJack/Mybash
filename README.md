@@ -1,2 +1,9 @@
 # Mybash
 ## ls功能
+### -a
+### -l
+### -i
+## cd功能
+## su功能
+## pwd功能
+## sleep功能
